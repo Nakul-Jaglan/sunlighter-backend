@@ -6,42 +6,51 @@ import os
 # Add parent directory to path to import from app
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.config import settings
-from app.api.api_v1.api import api_router
-
-# Create simple FastAPI app without lifespan events
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version=settings.VERSION,
-    description=settings.DESCRIPTION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
-)
-
-# Add CORS
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+try:
+    from app.core.config import settings
+    from app.api.api_v1.api import api_router
+except ImportError as e:
+    print(f"Import error: {e}")
+    # Fallback minimal app
+    app = FastAPI(title="SunLighter API", version="1.0.0")
+    
+    @app.get("/")
+    async def root():
+        return {"message": "Import error", "error": str(e)}
+else:
+    # Create simple FastAPI app without lifespan events
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        version=settings.VERSION,
+        description=settings.DESCRIPTION,
+        openapi_url=f"{settings.API_V1_STR}/openapi.json"
     )
 
-# Include API router at root level for Vercel
-app.include_router(api_router, prefix="")
+    # Add CORS
+    if settings.BACKEND_CORS_ORIGINS:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Welcome to SunLighter API",
-        "version": settings.VERSION,
-        "status": "healthy",
-        "environment": settings.ENVIRONMENT
-    }
+    # Include API router
+    app.include_router(api_router, prefix=settings.API_V1_STR)
 
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "version": settings.VERSION
-    }
+    @app.get("/")
+    async def root():
+        return {
+            "message": "Welcome to SunLighter API",
+            "version": settings.VERSION,
+            "status": "healthy",
+            "environment": settings.ENVIRONMENT
+        }
+
+    @app.get("/health")
+    async def health_check():
+        return {
+            "status": "healthy",
+            "version": settings.VERSION
+        }
