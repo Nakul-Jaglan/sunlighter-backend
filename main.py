@@ -23,12 +23,10 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up SunLighter API...")
     try:
-        # Only initialize DB if not in serverless environment
-        if settings.ENVIRONMENT != "production":
-            init_db()
-            logger.info("Database initialized successfully")
+        init_db()
+        logger.info("Database initialized successfully")
     except Exception as e:
-        logger.warning(f"Database initialization skipped: {e}")
+        logger.error(f"Database initialization failed: {e}")
     yield
     # Shutdown
     logger.info("Shutting down SunLighter API...")
@@ -57,7 +55,7 @@ if settings.BACKEND_CORS_ORIGINS:
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.vercel.app", "sunlighter.nakul.click", "localhost", "127.0.0.1"]
+        allowed_hosts=["*.railway.app", "sunlighter.nakul.click", "localhost", "127.0.0.1"]
     )
 
 # Include API router
