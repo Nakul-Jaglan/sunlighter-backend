@@ -27,8 +27,8 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-# Include API router
-app.include_router(api_router, prefix=settings.API_V1_STR)
+# Include API router at root level for Vercel
+app.include_router(api_router, prefix="")
 
 @app.get("/")
 async def root():
