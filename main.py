@@ -22,8 +22,13 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up SunLighter API...")
-    init_db()
-    logger.info("Database initialized successfully")
+    try:
+        # Only initialize DB if not in serverless environment
+        if settings.ENVIRONMENT != "production":
+            init_db()
+            logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.warning(f"Database initialization skipped: {e}")
     yield
     # Shutdown
     logger.info("Shutting down SunLighter API...")
@@ -48,11 +53,12 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-# Add trusted host middleware
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["localhost", "127.0.0.1", "*.sunlighter.com"]
-)
+# Add trusted host middleware for production
+if settings.ENVIRONMENT == "production":
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["*.vercel.app", "sunlighter.nakul.click", "localhost", "127.0.0.1"]
+    )
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
