@@ -34,6 +34,9 @@ class UserUpdate(BaseModel):
 
 class UserInDB(UserBase):
     id: int
+    user_id: Optional[str] = None  # For employees
+    employer_id: Optional[int] = None  # For employers (internal)
+    company_handle: Optional[str] = None  # For employers (public @handle)
     is_active: bool
     is_verified: bool
     company_name: Optional[str] = None

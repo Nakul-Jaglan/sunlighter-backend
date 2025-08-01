@@ -6,6 +6,7 @@ from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+from app.utils.id_generator import generate_employee_user_id, generate_employer_id, generate_company_handle
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
@@ -13,11 +14,26 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db.query(User).filter(User.email == email).first()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
+        # Generate appropriate IDs based on user type
+        user_id = None
+        employer_id = None
+        company_handle = None
+        
+        if obj_in.user_type.value == 'employee':
+            user_id = generate_employee_user_id(db)
+        else:  # employer
+            employer_id = generate_employer_id(db)
+            if obj_in.company_name:
+                company_handle = generate_company_handle(obj_in.company_name, db)
+        
         db_obj = User(
             email=obj_in.email,
             hashed_password=get_password_hash(obj_in.password),
             full_name=obj_in.full_name,
             user_type=obj_in.user_type,
+            user_id=user_id,
+            employer_id=employer_id,
+            company_handle=company_handle,
             phone_number=obj_in.phone_number,
             location=obj_in.location,
             bio=obj_in.bio,

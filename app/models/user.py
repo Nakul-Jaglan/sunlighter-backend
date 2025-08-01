@@ -15,6 +15,9 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, unique=True, index=True, nullable=True)  # Public alphanumeric ID for employees
+    company_handle = Column(String, unique=True, index=True, nullable=True)  # Public handle for employers (@company)
+    employer_id = Column(Integer, unique=True, index=True, nullable=True)  # Internal numeric ID for employers (100000-999999)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=False)
