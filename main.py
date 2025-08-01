@@ -55,7 +55,7 @@ if settings.BACKEND_CORS_ORIGINS:
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.railway.app", "sunlighter.nakul.click", "localhost", "127.0.0.1"]
+        allowed_hosts=["*.railway.app", "sunlighter-backend.nakul.click", "sunlighter.nakul.click", "localhost", "127.0.0.1"]
     )
 
 # Include API router
